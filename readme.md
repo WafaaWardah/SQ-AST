@@ -11,3 +11,5 @@ To run predictions, use the following command:
 ```bash
 python run_predict.py /path/to/output/dir /path/to/data/dir
 ```
+## Download Weights
+The weight .pth files can be downloaded from [here](https://tubcloud.tu-berlin.de/s/s4bKTRxWkSTTzFr). There are 5 of them for each dimension. Download and save them in the .weights/ directory.
