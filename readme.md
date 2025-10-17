@@ -10,6 +10,8 @@ Install the dependencies (requirements.txt) and download the run_predict.py scri
 ### Download Weights
 The weight .pth files can be downloaded from [here](https://tubcloud.tu-berlin.de/s/rik9dQaR66R8w5A). There are 5 of them for each dimension. Download and save them in the same directory as the run_predict.py script.
 
+After the SQ-AST model was published in Interspeech 2025, the model was further trained on new datasets. This produced the improved weights that have been evaluated by it ITU-T SG12 Q9 and approved for standardizat. These improved weights can be downloaded [here](https://tubcloud.tu-berlin.de/s/K9owXP3Fnj4pnJg). Note: the coloration weight file is the same as there was no further improvement.
+
 ## Running Predictions
 
 You can run prediction for either one .wav file or for all .wav files in a directory. You can also select if you want to only predict some dimensions to save compute time. 
