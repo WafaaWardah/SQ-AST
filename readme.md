@@ -14,7 +14,7 @@ The weight .pth files can be downloaded from [here](https://tubcloud.tu-berlin.d
 
 You can run prediction for either one .wav file or for all .wav files in a directory. You can also select if you want to only predict some dimensions to save compute time. 
 
-### Command for inference of one .wav file:
+### Command for inference of one .wav file
 
 Predict all dimensions for a single .wav file and show the results on screen only (no output file will be created):
 
@@ -34,7 +34,7 @@ Predict all dimensions for a single .wav file without printing the results, and 
 python run_predict.py --path /path/to/file.wav --output_dir /outputs/directory
 ```
 
-### Command for inference of all wav files in a directory:
+### Command for inference of all wav files in a directory
 
 Predict all dimensions for all .wav files in a directory and display the predictions on screen only (no output files will be created):
 
@@ -51,4 +51,19 @@ python run_predict.py \
 --bs 64 \
 --nw 4 \
 --device gpu
+```
+
+### Conformance Check
+The samples directory contains two sample speech files. This cammand can be used to predict their MOS scores:
+
+```bash
+python run_predict.py --path samples \
+    --dims mos --print True
+```
+
+The results should be:
+
+```bash
+(1/2) c00007_P501_C_english_m2_FB_48k.wav | MOS: 3.90
+(2/2) c00001_P501_C_english_f1_FB_48k.wav | MOS: 4.33
 ```
