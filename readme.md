@@ -46,19 +46,18 @@ Predict all dimensions for all .wav files in a directory using a specified batch
 
 ```bash
 python run_predict.py \
---path /path/to/directory \
---output_dir /outputs/directory \
---bs 64 \
---nw 4 \
---device gpu
+    --path /path/to/directory \
+    --output_dir /outputs/directory \
+    --bs 64 \
+    --nw 4 \
+    --device gpu
 ```
 
 ### Conformance Check
 The samples directory contains two sample speech files. This cammand can be used to predict their MOS scores:
 
 ```bash
-python run_predict.py --path samples \
-    --dims mos --print True
+python run_predict.py --path samples --dims mos --print True
 ```
 
 The results should be:
