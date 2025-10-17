@@ -5,44 +5,44 @@ Cite as: Wardah, W., Spang, R.P., Barriac, V., Reimes, J., Llagostera, A., Berge
 
 ## To set up
 
-Intall the dependencies (requirements.txt) and download the run_predict.py script. This is the only script needed for inference. 
+Install the dependencies (requirements.txt) and download the run_predict.py script. This is the only script needed for inference. 
 
 ### Download Weights
-The weight .pth files can be downloaded from [here](https://tubcloud.tu-berlin.de/s/rik9dQaR66R8w5A). There are 5 of them for each dimension. Download and save them in the same directory as the run:predict.py script.
+The weight .pth files can be downloaded from [here](https://tubcloud.tu-berlin.de/s/rik9dQaR66R8w5A). There are 5 of them for each dimension. Download and save them in the same directory as the run_predict.py script.
 
 ## Running Predictions
 
-You can run prediction for either one .wav file or for all wav files in a directory. You can also select if you want to only predict some dimensions to save compute time. 
+You can run prediction for either one .wav file or for all .wav files in a directory. You can also select if you want to only predict some dimensions to save compute time. 
 
-### Command for inference of one wav file:
+### Command for inference of one .wav file:
 
-To predict all dimensions for one wav file, print out the prediction, don’t save the prediction:
+Predict all dimensions for a single .wav file and show the results on screen only (no output file will be created):
 
 ```bash
-python python run_predict.py --path /path/to/file.wav --print True
+python run_predict.py --path /path/to/file.wav --print True
 ```
 
-To predict some dimensions (example overall quality mos and noisiness) for one wav file, print out the prediction, don’t save the prediction:
+Predict selected dimensions (e.g., overall quality mos and noisiness) for a single .wav file and show the results on screen only (no output file will be created):
 
 ```bash
-python python run_predict.py --path /path/to/file.wav --dims mos noi --print True
+python run_predict.py --path /path/to/file.wav --dims mos noi --print True
 ```
 
-To predict all dimensions for one wav file, don’t print out the prediction, but save the prediction:
+Predict all dimensions for a single .wav file without printing the results, and save the predictions to an output file:
 
 ```bash
-python python run_predict.py --path /path/to/file.wav --output_dir /outputs/directory
+python run_predict.py --path /path/to/file.wav --output_dir /outputs/directory
 ```
 
 ### Command for inference of all wav files in a directory:
 
-To predict all dimensions for all wav files in a directory, print out the predictions, but don’t save the predictions:
+Predict all dimensions for all .wav files in a directory and display the predictions on screen only (no output files will be created):
 
 ```bash
 python run_predict.py --path /path/to/directory --print True
 ```
 
-To predict all dimensions for all wav files in a directory, set batch size and number of workers, use gpu,  don’t print out the predictions, and save the prediction:
+Predict all dimensions for all .wav files in a directory using a specified batch size and number of workers, enable GPU processing, and save the predictions to an output file without printing them on screen:
 
 ```bash
 python run_predict.py \
