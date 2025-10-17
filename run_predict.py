@@ -1,6 +1,4 @@
-# prediction script for Model-XL (SQ-AST, P.SAMD as of September 2025) (no DB parameter calliberated normalization)
-# command e.g.: python python_inference/run_predict.py outputs databases/NISQA_TEST_P501 --dims mos noi dis col loud
-# 11.10.2025
+# Wafaa Wardah, TU-Berlin, 2025
 
 import multiprocessing as mp, threading, sys, gc, logging, os
 import pandas as pd
