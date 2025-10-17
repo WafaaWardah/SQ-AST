@@ -54,7 +54,7 @@ python run_predict.py \
 ```
 
 ### Conformance Check
-The samples directory contains two sample speech files. This cammand can be used to predict their MOS scores:
+The samples directory contains two sample speech files. This command can be used to predict their MOS scores:
 
 ```bash
 python run_predict.py --path samples --dims mos --print True
