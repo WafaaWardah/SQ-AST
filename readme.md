@@ -56,15 +56,15 @@ python run_predict.py \
 ```
 
 ### Conformance Check
-The samples directory contains two sample speech files. This command can be used to predict their MOS scores:
+The samples directory contains two sample speech files. This command can be used to predict their quality scores:
 
 ```bash
-python run_predict.py --path samples --dims mos --print True
+python run_predict.py --path samples --print True
 ```
 
-The results should be:
+Note that these results are from the improved weights (the second link). The results should be:
 
 ```bash
-(1/2) c00007_P501_C_english_m2_FB_48k.wav | MOS: 3.90
-(2/2) c00001_P501_C_english_f1_FB_48k.wav | MOS: 4.33
+(1/2) c00007_P501_C_english_m2_FB_48k.wav | MOS: 4.32, NOI: 4.58, DIS: 4.37, COL: 4.62, LOUD: 4.71
+(2/2) c00001_P501_C_english_f1_FB_48k.wav | MOS: 4.43, NOI: 4.62, DIS: 4.27, COL: 4.71, LOUD: 4.69
 ```
