@@ -52,10 +52,21 @@ class ASTVal(Dataset):
         return len(self.df)
     
     def __getitem__(self, index):
+
+        TARGET_SR = 48_000
+
         file_name = os.path.join(self.data_dir, self.df['file_path'].iloc[index])
         waveform, sample_rate = torchaudio.load(file_name)
 
-        waveform = waveform.squeeze()
+        waveform = waveform.mean(dim=0) if waveform.shape[0] > 1 else waveform.squeeze()
+
+        if sample_rate != TARGET_SR:
+            resampler = torchaudio.transforms.Resample(
+                orig_freq=sample_rate,
+                new_freq=TARGET_SR
+            )
+            waveform = resampler(waveform)
+            sample_rate = TARGET_SR
 
         features = self.feature_extractor(
             waveform, 
@@ -178,7 +189,7 @@ def main():
     models_by_dim = {}
     for dim in dims:  # dims comes from argparse
         model = ASTXL()
-        state = torch.load(f"./{dim}.pth", map_location=torch.device(device), weights_only=True)
+        state = torch.load(f"/Users/wafaa/TubCloud/psamd/share-model-Dec/weights/{dim}.pth", map_location=torch.device(device), weights_only=True)
         model.load_state_dict(state)
         model.to(device)
         model.eval()
