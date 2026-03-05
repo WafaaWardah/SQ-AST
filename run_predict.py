@@ -86,6 +86,13 @@ def main():
     parser = argparse.ArgumentParser(description="Run the prediction script.")
     parser.add_argument("--path", type=str, help="Path to the wav file or to the data directory")
     parser.add_argument("--output_dir", type=str, help="Path to the output directory if saving the results", default=None)
+
+    parser.add_argument(
+        "--weights_dir",
+        type=str,
+        default="./weights",
+        help="Directory containing model weight files (mos.pth, noi.pth, ...). Default: ./weights"
+    )
     
     parser.add_argument(
         "--dims",
@@ -119,7 +126,10 @@ def main():
         data_dir = args.path
         wav_path = None
 
-    weights_path = "./" # Change this before packaging - perhaps put in same dir?
+    weights_path = args.weights_dir
+    if not os.path.isdir(weights_path):
+        raise FileNotFoundError(f"Weights directory not found: {weights_path}")
+
     db_mean = -10.25446422 # calculated from the validation datasets from July 2025
     db_std = 4.205750774 # calculated from the validation datasets from July 2025
     
@@ -189,7 +199,11 @@ def main():
     models_by_dim = {}
     for dim in dims:  # dims comes from argparse
         model = ASTXL()
-        state = torch.load(f"./weights/{dim}.pth", map_location=torch.device(device), weights_only=True)
+        state = torch.load(
+            os.path.join(weights_path, f"{dim}.pth"),
+            map_location=torch.device(device),
+            weights_only=True
+        )
         model.load_state_dict(state)
         model.to(device)
         model.eval()
