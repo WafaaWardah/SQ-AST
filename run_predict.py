@@ -10,9 +10,12 @@ from torch.utils.data import Dataset, DataLoader
 from datetime import datetime
 from transformers import ASTModel, ASTFeatureExtractor, logging as hf_logging
 
-#hf_logging.set_verbosity_error()  # Silence unnecessary warnings from huggingface
 
+
+#hf_logging.set_verbosity_error()  # Silence unnecessary warnings from huggingface
 torch.multiprocessing.set_sharing_strategy('file_system')
+
+
 
 class ASTXL(torch.nn.Module):
     """Model-XL with individual AST for each dimension."""
@@ -35,7 +38,9 @@ class ASTXL(torch.nn.Module):
         hidden_state = self.ast(features).pooler_output
         pred = self.fc(hidden_state).squeeze()
         return pred
-    
+
+
+
 class ASTVal(Dataset):
     def __init__(self, df, data_dir, db_mean, db_std):
         self.df = df
@@ -79,8 +84,8 @@ class ASTVal(Dataset):
         return index, features
 
 
-def main():
 
+def main():
     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     parser = argparse.ArgumentParser(description="Run the prediction script.")
@@ -139,7 +144,7 @@ def main():
         device = "cpu"
 
     print('=' * 80)
-    print("    P.SAMD (v1 2025) - Speech Quality Inference     ")
+    print("    P.SAMD (v1 2025) - Speech Quality Inference")
     print('=' * 80)
     
     print(f"\nUsing device: {device}")
@@ -186,6 +191,19 @@ def main():
 
         ds = ASTVal(df, os.path.dirname(wav_path), db_mean, db_std)
 
+    # create output file
+    outfile = None
+    if output_dir is not None:
+        os.makedirs(output_dir, exist_ok=True)
+        outfile = os.path.join(
+            output_dir,
+            db_name + '_prediction_per_file_' + current_time + '.csv'
+        )
+    
+    # initialize the columns once before inference so the CSV always has the same structure
+    for c in ['mos_pred','noi_pred','dis_pred','col_pred','loud_pred']:
+        ds.df[c] = None
+
     dl = DataLoader(
         dataset=ds,
         batch_size=bs,
@@ -228,28 +246,30 @@ def main():
 
             for idx in index.tolist():
                 processed_files += 1
-                if args.print in [True, 'true', 'True', '1', 1]:  # Print option
+
+                # compute descaled scores for this file
+                scores = (y_hat_val[idx] * 4 + 1).numpy()
+
+                ds.df.loc[int(idx), 'mos_pred'] = scores[0]
+                ds.df.loc[int(idx), 'noi_pred'] = scores[1]
+                ds.df.loc[int(idx), 'dis_pred'] = scores[2]
+                ds.df.loc[int(idx), 'col_pred'] = scores[3]
+                ds.df.loc[int(idx), 'loud_pred'] = scores[4]
+
+                if args.print in [True, 'true', 'True', '1', 1]:
                     file_path = ds.df.loc[int(idx), "file_path"]
-                    scores = y_hat_val[idx] * 4 + 1  # descaled
                     parts = [f"{d.upper()}: {scores[COL_IDX[d]]:.2f}" for d in dims]
                     print(f"({processed_files}/{total_files}) {os.path.basename(file_path)} | " + ", ".join(parts))
 
-    # Scale predictions once all batches are processed
-    y_hat_val_descaled = y_hat_val * 4 + 1 # On CPU
-    y_hat_val_descaled = y_hat_val_descaled.detach().numpy() # On CPU
+                # write CSV after each processed file
+                if outfile is not None:
+                    tmp_df = ds.df.drop(columns=['db_mean', 'db_std'], errors='ignore')
+                    tmp_df.to_csv(outfile, index=False)
 
-    # Convert predictions into DataFrame columns on CPU
-    ds.df['mos_pred'] = y_hat_val_descaled[:, 0]
-    ds.df['noi_pred'] = y_hat_val_descaled[:, 1]
-    ds.df['dis_pred'] = y_hat_val_descaled[:, 2]
-    ds.df['col_pred'] = y_hat_val_descaled[:, 3]
-    ds.df['loud_pred'] = y_hat_val_descaled[:, 4]
+    # provide user confirmation about saved output file
+    print("Saved predicted scores:", os.path.join(output_dir, outfile))
 
-    if output_dir is not None:
-        ds.df.drop(columns=['db_mean', 'db_std'], inplace=True)  # Drop unnecessary columns before saving
-        outfile = db_name + '_prediction_per_file_' + current_time + '.csv'
-        ds.df.to_csv(os.path.join(output_dir, outfile), index=False)  
-        print("Saved predicted scores:", os.path.join(output_dir, outfile))
+
 
 if __name__ == "__main__":
     main()
