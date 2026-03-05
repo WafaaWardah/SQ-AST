@@ -117,6 +117,13 @@ def main():
 
     parser.add_argument("--print", type=str, help="Option to print the predicted scores out, default is set to False", default=False)
 
+    parser.add_argument(
+        "--overwrite",
+        type=str,
+        default="true",
+        help="Whether to recompute scores for files already present in the output CSV (default: true)"
+    )
+
     args = parser.parse_args()
 
     output_dir = args.output_dir
@@ -134,6 +141,8 @@ def main():
     weights_path = args.weights_dir
     if not os.path.isdir(weights_path):
         raise FileNotFoundError(f"Weights directory not found: {weights_path}")
+
+    overwrite = str(args.overwrite).lower() in ["true", "1", "yes"]
 
     db_mean = -10.25446422 # calculated from the validation datasets from July 2025
     db_std = 4.205750774 # calculated from the validation datasets from July 2025
@@ -191,18 +200,41 @@ def main():
 
         ds = ASTVal(df, os.path.dirname(wav_path), db_mean, db_std)
 
-    # create output file
+    # check for existing results or create output file
     outfile = None
+    existing_results = None
+
     if output_dir is not None:
         os.makedirs(output_dir, exist_ok=True)
         outfile = os.path.join(
             output_dir,
             db_name + '_prediction_per_file_' + current_time + '.csv'
         )
+
+        # if overwrite disabled, try loading an existing file
+        if not overwrite:
+            existing_files = [
+                f for f in os.listdir(output_dir)
+                if f.startswith(db_name + "_prediction_per_file_") and f.endswith(".csv")
+            ]
+            if existing_files:
+                existing_files.sort()
+                outfile = os.path.join(output_dir, existing_files[-1])
+                existing_results = pd.read_csv(outfile)
     
     # initialize the columns once before inference so the CSV always has the same structure
     for c in ['mos_pred','noi_pred','dis_pred','col_pred','loud_pred']:
         ds.df[c] = None
+
+    # handle existing results
+    if existing_results is not None:
+        processed = set(existing_results["file_path"].values)
+        before = len(ds.df)
+        ds.df = ds.df[~ds.df["file_path"].isin(processed)].reset_index(drop=True)
+        skipped = before - len(ds.df)
+
+        if skipped > 0:
+            print(f"Skipping {skipped} already processed files.")
 
     dl = DataLoader(
         dataset=ds,
@@ -264,7 +296,13 @@ def main():
                 # write CSV after each processed file
                 if outfile is not None:
                     tmp_df = ds.df.drop(columns=['db_mean', 'db_std'], errors='ignore')
-                    tmp_df.to_csv(outfile, index=False)
+
+                    if existing_results is not None:
+                        combined = pd.concat([existing_results, tmp_df], ignore_index=True)
+                        combined.drop_duplicates(subset=["file_path"], keep="last", inplace=True)
+                        combined.to_csv(outfile, index=False)
+                    else:
+                        tmp_df.to_csv(outfile, index=False)
 
     # provide user confirmation about saved output file
     print("Saved predicted scores:", os.path.join(output_dir, outfile))
